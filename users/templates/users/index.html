@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,
+								initial-scale=1.0"
+    />
+    <title>Multi Step Form</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+  </head>
+
+  <body>
+    <nav class="navbar navbar-light">
+      <div
+        class="container-fluid d-flex justify-content-between align-items-center"
+      >
+        <span class="navbar-brand mb-0 h1">خطـوات التسجـيـل</span>
+        <span class="navbar-brand mb-0 h1">تعهيد</span>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="progress">
+        <div
+          class="progress-bar progress-bar-striped"
+          role="progressbar"
+          style="width: 0%"
+          aria-valuenow="0"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        ></div>
+      </div>
+
+      <div class="step">
+        <h4 class="mb-5">أهلا و سهلا</h4>
+        <h6 class="mb-5">
+          من هنا خطوتك الأولـى لشراء دراجة نارية ثم تأجيـرها على شركات معتمدة من
+          خلالنــا
+        </h6>
+        <div class="mb-3">
+          <input
+            type="email"
+            placeholder="ادخل بريدك الالكـتـرونـي"
+            oninput="this.className = ''"
+            name="field1"
+            id="email-input"
+          />
+          <p id="email-input-error" class="error-message"></p>
+        </div>
+      </div>
+
+      <!-- ========================================================================================= -->
+
+      <div class="step">
+        <h6 class="mb-4">وصلك كود التحقق على بريدك الالكتـرونـي؟</h6>
+        <div class="mb-3">
+          <input
+            type="text"
+            placeholder="ادخل كــــود التحقـق"
+            oninput="this.className = ''"
+            name="code-input"
+            id="code-input"
+          />
+          <p id="code-input-error" class="error-message"></p>
+          <p class="hint-below-input">
+            دخلت بريد الكتروني خاطئ؟ تقدر تعدله
+            <span onclick="nextPrev(-1)">من هنا</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- ========================================================================================= -->
+
+      <div class="step">
+        <h6 class="mb-4">نحتـــاج رقم جوالــك</h6>
+        <div class="mb-3">
+          <input
+            type="number"
+            placeholder="ادخل رقم جوالك"
+            oninput="this.className = ''"
+            name="field3"
+            id="phone-input"
+          />
+          <p class="error-message" id="phone-input-error"></p>
+        </div>
+      </div>
+
+      <!-- ========================================================================================= -->
+
+      <div class="step">
+        <h6 class="mb-4">تهمنا البيانات التالية عشان العقــد</h6>
+        <div class="d-flex flex-column gap-3">
+          <input
+            type="text"
+            placeholder="اسمــك الثلاثــي"
+            oninput="this.className = ''"
+            name="field4"
+            id="name-input"
+          />
+          <p class="error-message" id="name-input-error"></p>
+          <input
+            type="text"
+            placeholder="رقم هويتك"
+            oninput="this.className = ''"
+            name="field5"
+            id="identification-input"
+          />
+          <p class="error-message" id="identification-input-error"></p>
+        </div>
+        <p class="hint-below-input">
+          سيتم ادراج البيانات اعلاه بالعقد , الرجاء التأكد من صحتها
+        </p>
+      </div>
+
+      <!-- ========================================================================================= -->
+
+      <div class="step">
+        <h6 class="mb-4">كم عدد الدراجات النارية اللي ودك تشتـري؟</h6>
+        <div class="d-flex flex-column mb-3 additional-description">
+          <span>سعر الشـراء يشمل :</span>
+          <span>الدراجة النارية 3300 ريال</span>
+          <span>اصدار اللوحات 500 ريال</span>
+          <span>التأمين سنتين 2150 ريال</span>
+        </div>
+        <div class="d-flex flex-column gap-3 mt-5">
+          <input
+            type="number"
+            placeholder="اختـر العدد من هنا"
+            oninput="this.className = ''"
+            name="field6"
+            id="motorcycle-count-input"
+          />
+          <p class="error-message" id="motorcycle-count-input-error"></p>
+        </div>
+        <p class="hint-below-input">كل دراجة نارية تؤجر بـ 500 ريال شهريا</p>
+      </div>
+
+      <!-- ========================================================================================= -->
+
+      <div class="step">
+        <h6>
+          و ّدك نأجرهم على شـركة وحدة او نوزعهم على شركات متعددة عشان نقلل
+          الـمخاطر؟
+        </h6>
+        <div class="d-flex flex-column mb-3 additional-description">
+          <span
+            >دائما ننصح بتوزيع الدراجات النارية على عدة شـركات لتقليل
+            الـمخاطر</span
+          >
+        </div>
+        <div class="mb-3 mt-5">
+          <div
+            class="d-flex gap-3 justify-content-center align-items-center checkbox-input-container"
+          >
+            <label class="checkbox-container">
+              <input
+                type="checkbox"
+                checked="checked"
+                id="motor-rent-checkbox"
+              />
+              <span class="checkmark"></span>
+            </label>
+            <span
+              >نعم ارغب بتأجيـر الدراجات النارية على شـركات متفرقة لتقليل
+              المخاطر</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================================= -->
+
+      <div class="step">
+        <h6>إجمالـي الـمبلغ الـمطلوب سداده 5950 ريال</h6>
+        <div class="d-flex flex-column mb-5 additional-description">
+          <span>سوف تؤجر بـ 500 ريال شهريا لـمدة 18 شهر</span>
+          <span class="sub-description"
+            >سعر بيع الدراجة بعد انتهاء فترة التأجير يحدد لاحقا</span
+          >
+        </div>
+        <div class="mb-3">
+          <div class="d-flex gap-3 align-items-center checkbox-input-container">
+            <label class="checkbox-container">
+              <input
+                type="checkbox"
+                checked="checked"
+                id="price-agreement-checkbox"
+              />
+              <span class="checkmark"></span>
+            </label>
+            <span>لقد فهمت ذلك</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================================= -->
+
+      <div class="step">
+        <h6>الإتفاقية</h6>
+        <div class="d-flex flex-column mb-3 additional-description with-border">
+          <span class="sub-description"
+            >بناء على البيانات المدخلة من قبلك تم اعداد هذه الاتفاقية , و عدد
+            اطراف الاتفاقية اثنان “نحن” نمثل الطرف الاول و “انت” تمثل الطرف
+            الثانـي و تتمثل بنود الاتفاقية بالتالي : بناء على البيانات المدخلة
+            من قبلك تم اعداد هذه الاتفاقية , و عدد اطراف الاتفاقية اثنان “نحن”
+            نمثل الطرف الاول و “انت” تمثل الطرف الثانـي و تتمثل بنود الاتفاقية
+            بالتالي : بناء على البيانات المدخلة من قبلك تم اعداد هذه الاتفاقية ,
+            و عدد اطراف الاتفاقية اثنان “نحن” نمثل الطرف الاول و “انت” تمثل
+            الطرف الثانـي و تتمثل بنود الاتفاقية بالتالي : بناء على البيانات
+            المدخلة من قبلك تم اعداد هذه بناء على البيانات المدخلة من قبلك تم
+            اعداد هذه الاتفاقية , و عدد اطراف الاتفاقية اثنان “نحن” نمثل الطرف
+            الاول و “انت” تمثل الطرف الثانـي و تتمثل بنود الاتفاقية بالتالي :
+            اطراف الاتفاقية اثنان “نحن” نمثل الطرف الاول و “انت” تمثل الطرف
+            الثانـي و تتمثل بنود الاتفاقية بالتالي : بناء على البيانات المدخلة
+            من قبلك تم اعداد هذه الاتفاقية , و عدد اطراف الاتفاقية اثنان “نحن”
+            نمثل الطرف الاول و “انت” تمثل الطرف الثانـي و تتمثل بنود
+            الاتفاقية</span
+          >
+        </div>
+        <div>
+          <div
+            class="d-flex gap-3 justify-content-center align-items-center checkbox-input-container"
+          >
+            <label class="checkbox-container">
+              <input
+                type="checkbox"
+                checked="checked"
+                id="policy-agreement-checkbox"
+              />
+              <span class="checkmark"></span>
+            </label>
+            <span
+              >اوافق على بنود الاتفاقية و موافقتي بمثابة توقيع رسمي و معتمد دون
+              الحاجة الى توقيع المستند يدويا</span
+            >
+          </div>
+        </div>
+        <p class="hint-below-input">
+          سوف يتم ارسال نسخة موقعة من قبلنا على بريدك الالكتروني التــالــي بعد
+          انهاءك لجميع خطوات التسجيل
+        </p>
+      </div>
+
+      <!-- ========================================================================================= -->
+
+      <div class="step">
+        <h6>سعيديـن بثقتــك</h6>
+        <div class="d-flex flex-column mb-5 additional-description">
+          <p>نأمل تحويل المبلغ الـمستحق 5590 ريال الى الحساب البنكي لـ</p>
+          <p>شركة الدراجات النارية المعتمدة مصرف الانماء</p>
+          <p>SA395000000694525500587</p>
+        </div>
+        <div class="mb-3">
+          <div class="d-flex gap-3 align-items-center checkbox-input-container">
+            <label class="checkbox-container">
+              <input type="checkbox" checked="checked" id="file-input" />
+              <span class="checkmark"></span>
+            </label>
+            <span>ارفق ايصال التحويل هنا</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================================= -->
+
+      <div class="step">
+        <h6>شكــرا لك</h6>
+        <div class="d-flex flex-column mb-5 additional-description">
+          <span>جاري التحقق من اتمام خطوات التسجيل</span>
+          <span class="sub-description"
+            >سيتم ابلاغك عبر البريد الالكتروني عند الانتهاء من المراجعة</span
+          >
+          <span class="sub-description mt-5"
+            >تستطيع تسجيل الدخـول و الاطلاع علـى المعلومات بعد التحقق من اتمام
+            خطوات التسجيل</span
+          >
+        </div>
+      </div>
+
+      <div class="form-footer d-flex gap-3">
+        <!-- <button type="button" id="prevBtn" onclick="nextPrev(-1)">
+          السابق
+        </button> -->
+        <button type="button" id="nextBtn" onclick="nextPrev(1)">
+          التالي<img src="{% static 'arrow-left.svg' %}" />
+        </button>
+      </div>
+    </div>
+    <script src="{% static 'script.js' %}"></script>
+  </body>
+</html>
+
