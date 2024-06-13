@@ -60,6 +60,7 @@
             oninput="this.className = ''"
             name="field1"
             id="email-input"
+            required
           />
           <p id="email-input-error" class="error-message"></p>
         </div>
@@ -76,6 +77,7 @@
             oninput="this.className = ''"
             name="code-input"
             id="code-input"
+            required
           />
           <p id="code-input-error" class="error-message"></p>
           <p class="hint-below-input">
@@ -96,6 +98,7 @@
             oninput="this.className = ''"
             name="field3"
             id="phone-input"
+            required
           />
           <p class="error-message" id="phone-input-error"></p>
         </div>
@@ -112,6 +115,7 @@
             oninput="this.className = ''"
             name="field4"
             id="name-input"
+            required
           />
           <p class="error-message" id="name-input-error"></p>
           <input
@@ -120,6 +124,7 @@
             oninput="this.className = ''"
             name="field5"
             id="identification-input"
+            required
           />
           <p class="error-message" id="identification-input-error"></p>
         </div>
@@ -145,6 +150,7 @@
             oninput="this.className = ''"
             name="field6"
             id="motorcycle-count-input"
+            required
           />
           <p class="error-message" id="motorcycle-count-input-error"></p>
         </div>
@@ -302,7 +308,201 @@
         </button>
       </div>
     </div>
-    <script src="{% static 'script.js' %}"></script>
+    <script>
+      let currentTab = 0;
+      showTab(currentTab);
+
+      function showTab(n) {
+        let x = document.getElementsByClassName("step");
+        x[n].style.display = "block";
+        let progress = (n / (x.length - 1)) * 100;
+        document.querySelector(".progress-bar").style.width = progress + "%";
+        document
+          .querySelector(".progress-bar")
+          .setAttribute("aria-valuenow", progress);
+        // if (n == 0) {
+        //   document.getElementById("prevBtn").style.display = "none";
+        // } else {
+        //   document.getElementById("prevBtn").style.display = "inline";
+        // }
+        if (n == x.length - 1) {
+          document.getElementById("nextBtn").innerHTML = "Submit";
+        } else {
+          document.getElementById("nextBtn").innerHTML =
+            'التالي<img src="./arrow-left.svg" />';
+        }
+      }
+
+      async function nextPrev(n) {
+        let x = document.getElementsByClassName("step");
+        if (n == 1 && !(await validateForm())) return false;
+        x[currentTab].style.display = "none";
+        currentTab += n;
+        if (currentTab >= x.length) {
+          document.querySelector(".progress-bar").style.width = "100%";
+          document
+            .querySelector(".progress-bar")
+            .setAttribute("aria-valuenow", 100);
+          resetForm();
+          return false;
+        }
+        showTab(currentTab);
+      }
+
+      async function validateForm() {
+        let valid = true;
+        let x = document.getElementsByClassName("step");
+        let y = x[currentTab].getElementsByTagName("input");
+        for (let i = 0; i < y.length; i++) {
+          if (y[i].value == "") {
+            y[i].className += " invalid";
+            let errorElement = document.getElementById(`${y[i].id}-error`);
+            if (errorElement) {
+              errorElement.textContent = "هذا الحقل مطلوب.";
+            }
+            valid = false;
+          } else {
+            let errorElement = document.getElementById(`${y[i].id}-error`);
+            if (errorElement) {
+              errorElement.textContent = "";
+            }
+            if (y[i].id === "email-input" && !validateEmail(y[i].value)) {
+              y[i].className += " invalid";
+              document.getElementById("email-input-error").textContent = "الرجاء إدخال بريد إلكتروني صحيح.";
+              valid = false;
+            } else if (y[i].id === "phone-input" && !validatePhoneNumber(y[i].value)) {
+              y[i].className += " invalid";
+              document.getElementById("phone-input-error").textContent = "الرجاء إدخال رقم هاتف صحيح.";
+              valid = false;
+            } else if (y[i].id === "identification-input" && y[i].value.length < 10) {
+              y[i].className += " invalid";
+              document.getElementById("identification-input-error").textContent = "رقم الهوية يجب أن يكون 10 أرقام على الأقل.";
+              valid = false;
+            } else if (y[i].id === "motorcycle-count-input" && y[i].value <= 0) {
+              y[i].className += " invalid";
+              document.getElementById("motorcycle-count-input-error").textContent = "الرجاء إدخال عدد صحيح أكبر من صفر.";
+              valid = false;
+            }
+          }
+        }
+
+        if (valid) {
+          if (currentTab === 0) {
+            localStorage.setItem(
+              "email",
+              document.getElementById("email-input").value
+            );
+          } else if (currentTab === 2) {
+            localStorage.setItem(
+              "phone",
+              document.getElementById("phone-input").value
+            );
+          } else if (currentTab === 3) {
+            localStorage.setItem(
+              "name",
+              document.getElementById("name-input").value
+            );
+            localStorage.setItem(
+              "identification",
+              document.getElementById("identification-input").value
+            );
+          } else if (currentTab === 4) {
+            localStorage.setItem(
+              "motorcycle-count",
+              document.getElementById("motorcycle-count-input").value
+            );
+          }
+          return await callAPIForStep(currentTab);
+        }
+        return valid;
+      }
+
+      function validateEmail(email) {
+        const re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        return re.test(String(email).toLowerCase());
+      }
+
+      function validatePhoneNumber(phone) {
+        const re = /^[0-9]{10}$/;
+        return re.test(String(phone));
+      }
+
+      async function callAPIForStep(step) {
+        let apiUrl;
+        let data;
+
+        switch (step) {
+          case 0:
+            apiUrl = "{{base_url}}/users/register/";
+            data = { email: localStorage.getItem("email") };
+            console.log({data});
+            break;
+          case 1:
+            apiUrl = "{{base_url}}/users/verify/";
+            data = {
+              code: document.getElementById("code-input").value,
+              email: localStorage.getItem("email"),
+            };
+            break;
+          case 9:
+            apiUrl = "{{base_url}}/users/complete-registration/";
+            data = { 
+              phone: document.getElementById("phone-input").value,
+              email: localStorage.getItem("email"),
+              full_name: localStorage.getItem("name"),
+              id_number: localStorage.getItem("identification"),
+              count: localStorage.getItem("motorcycle-count")
+            };
+            break;
+        }
+
+        if (apiUrl && data) {
+          try {
+            let response = await fetch(apiUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(data),
+            });
+            let result = await response.json();
+            if (!response.ok) {
+              handleError(step, result.message);
+              return false;
+            }
+          } catch (error) {
+            handleError(step, error.message);
+            return false;
+          }
+        }
+        return true;
+      }
+
+      function handleError(step, message) {
+        let x = document.getElementsByClassName("step");
+        let errorMessageElement = x[step].querySelector(".error-message");
+        if (errorMessageElement) {
+          errorMessageElement.textContent = message;
+        }
+      }
+
+      function resetForm() {
+        let x = document.getElementsByClassName("step");
+        for (let i = 0; i < x.length; i++) {
+          x[i].style.display = "none";
+        }
+        let inputs = document.querySelectorAll("input");
+        inputs.forEach((input) => {
+          input.value = "";
+          input.className = "";
+        });
+        currentTab = 0;
+        showTab(currentTab);
+        document.querySelector(".progress-bar").style.width = "0%";
+        document
+          .querySelector(".progress-bar")
+          .setAttribute("aria-valuenow", 0);
+      }
+    </script>
   </body>
 </html>
-

@@ -31,7 +31,6 @@ class Client(models.Model):
     STEPS_CHOICES = (
         ('first', 'الاولى'),
         ('second', 'الثانية'),
-        ('third', 'الثالثة'),
         ('completed', 'مكتمل ✅')
     )
     email = models.EmailField(unique=True)

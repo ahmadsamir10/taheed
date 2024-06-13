@@ -72,28 +72,33 @@ switch (step) {
     console.log({data});
     break;
     case 1:
-    apiUrl = "https://yourapi.com/verify-code";
+    apiUrl = "http://127.0.0.1:8000/users/verify/";
     data = {
         code: document.getElementById("code-input").value,
         email: localStorage.getItem("email"),
     };
     break;
     case 2:
-    apiUrl = "https://yourapi.com/phone";
-    data = { phone: document.getElementById("phone-input").value };
+    apiUrl = "http://127.0.0.1:8000/users/add-phone-number/";
+    data = { 
+        phone: document.getElementById("phone-input").value,
+        email: localStorage.getItem("email")
+     };
     break;
     case 3:
-    apiUrl = "https://yourapi.com/personal-info";
+    apiUrl = "http://127.0.0.1:8000/users/add-personal-info/";
     data = {
-        name: document.getElementById("name-input").value,
-        identification: document.getElementById("identification-input")
+        full_name: document.getElementById("name-input").value,
+        id_number: document.getElementById("identification-input")
         .value,
+        email: localStorage.getItem("email")
     };
     break;
     case 4:
-    apiUrl = "https://yourapi.com/motorcycle-count";
+    apiUrl = "http://127.0.0.1:8000/users/add-motorcycle-count/";
     data = {
         count: document.getElementById("motorcycle-count-input").value,
+        email: localStorage.getItem("email")
     };
     break;
     // Add more cases for other steps as needed

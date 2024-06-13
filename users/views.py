@@ -13,8 +13,15 @@ User = Client
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(View):
+    
+    @staticmethod
+    def get_base_url(request):
+        base_url = f"{request.scheme}://{request.get_host()}"
+        return base_url
+    
     def get(self, request):
-        return render(request, 'users/index.html')
+        context = {"base_url": self.get_base_url(request)}
+        return render(request, 'users/index.html', context)
 
     def post(self, request):
         body_unicode = request.body.decode('utf-8')
@@ -25,36 +32,46 @@ class RegisterView(View):
         user, created = User.objects.get_or_create(email=email, defaults={'verification_code': code})
         if not created:
             user.verification_code = code
+            user.steps = 'first'
             user.save()
-        send_mail('Your verification code', f'Your code is {code}', 'from@example.com', [email])
+        send_mail('رمز التحقق الخاص بك', f'رمز التحقق الخاص بك هو :{code}', 'admin@taheed.com', [email])
         return JsonResponse({'message': 'Verification code sent'})
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class VerifyView(View):
     def post(self, request):
-        email = request.body.get('email')
-        code = request.body.get('code')
+        body_unicode = request.body.decode('utf-8')
+        body_data = json.loads(body_unicode)
+        
+        email = body_data.get('email')
+        code = body_data.get('code')
         try:
             user = User.objects.get(email=email, verification_code=code)
             user.is_verified = True
+            user.steps = 'second'
             user.save()
             return JsonResponse({'message': 'Email verified'})
         except User.DoesNotExist:
-            return JsonResponse({'message': 'Invalid code'}, status=400)
+            return JsonResponse({'message': 'رمز خاطئ'}, status=400)
 
+
+
+@method_decorator(csrf_exempt, name='dispatch')
 class CompleteRegistrationView(View):
     def post(self, request):
-        email = request.body.get('email')
-        user = User.objects.get(email=email)
-        user.full_name = request.body.get('full_name')
-        user.phone = request.body.get('phone')
-        user.id_number = request.body.get('id_number')
-        user.bike_count = request.body.get('bike_count')
-        if 'receipt' in request.FILES:
-            user.receipt = request.FILES['receipt']
+        body_unicode = request.body.decode('utf-8')
+        body_data = json.loads(body_unicode)
+        email = body_data.get('email')
+        user = Client.objects.get(email=email)
+        user.full_name = body_data.get('full_name')
+        user.phone = body_data.get('phone')
+        user.id_number = body_data.get('id_number')
+        user.bike_count = body_data.get('count')
+        user.steps = "completed"
+
         user.save()
         return JsonResponse({'message': 'Registration completed'})
-
-
 
 
 # views.py
