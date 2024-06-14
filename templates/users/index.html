@@ -93,7 +93,7 @@
         <h6 class="mb-4">نحتـــاج رقم جوالــك</h6>
         <div class="mb-3">
           <input
-            type="number"
+            type="text"
             placeholder="ادخل رقم جوالك"
             oninput="this.className = ''"
             name="field3"
@@ -147,7 +147,7 @@
           <input
             type="number"
             placeholder="اختـر العدد من هنا"
-            oninput="this.className = ''"
+            oninput="updateTotalPriceAndValidate()"
             name="field6"
             id="motorcycle-count-input"
             required
@@ -155,6 +155,7 @@
           <p class="error-message" id="motorcycle-count-input-error"></p>
         </div>
         <p class="hint-below-input">كل دراجة نارية تؤجر بـ 500 ريال شهريا</p>
+        <div id="total-price"></div>
       </div>
 
       <!-- ========================================================================================= -->
@@ -193,9 +194,9 @@
       <!-- ========================================================================================= -->
 
       <div class="step">
-        <h6>إجمالـي الـمبلغ الـمطلوب سداده 5950 ريال</h6>
+        <h6>إجمالـي الـمبلغ الـمطلوب سداده <span class="total-price-summary"></span></h6>
         <div class="d-flex flex-column mb-5 additional-description">
-          <span>سوف تؤجر بـ 500 ريال شهريا لـمدة 18 شهر</span>
+          <span>سوف تؤجر بـ <span class="total-price-summary"></span> شهريا لـمدة 18 شهر</span>
           <span class="sub-description"
             >سعر بيع الدراجة بعد انتهاء فترة التأجير يحدد لاحقا</span
           >
@@ -220,23 +221,7 @@
       <div class="step">
         <h6>الإتفاقية</h6>
         <div class="d-flex flex-column mb-3 additional-description with-border">
-          <span class="sub-description"
-            >بناء على البيانات المدخلة من قبلك تم اعداد هذه الاتفاقية , و عدد
-            اطراف الاتفاقية اثنان “نحن” نمثل الطرف الاول و “انت” تمثل الطرف
-            الثانـي و تتمثل بنود الاتفاقية بالتالي : بناء على البيانات المدخلة
-            من قبلك تم اعداد هذه الاتفاقية , و عدد اطراف الاتفاقية اثنان “نحن”
-            نمثل الطرف الاول و “انت” تمثل الطرف الثانـي و تتمثل بنود الاتفاقية
-            بالتالي : بناء على البيانات المدخلة من قبلك تم اعداد هذه الاتفاقية ,
-            و عدد اطراف الاتفاقية اثنان “نحن” نمثل الطرف الاول و “انت” تمثل
-            الطرف الثانـي و تتمثل بنود الاتفاقية بالتالي : بناء على البيانات
-            المدخلة من قبلك تم اعداد هذه بناء على البيانات المدخلة من قبلك تم
-            اعداد هذه الاتفاقية , و عدد اطراف الاتفاقية اثنان “نحن” نمثل الطرف
-            الاول و “انت” تمثل الطرف الثانـي و تتمثل بنود الاتفاقية بالتالي :
-            اطراف الاتفاقية اثنان “نحن” نمثل الطرف الاول و “انت” تمثل الطرف
-            الثانـي و تتمثل بنود الاتفاقية بالتالي : بناء على البيانات المدخلة
-            من قبلك تم اعداد هذه الاتفاقية , و عدد اطراف الاتفاقية اثنان “نحن”
-            نمثل الطرف الاول و “انت” تمثل الطرف الثانـي و تتمثل بنود
-            الاتفاقية</span
+          <span class="sub-description">{{agreement_text}}</span
           >
         </div>
         <div>
@@ -269,8 +254,8 @@
         <h6>سعيديـن بثقتــك</h6>
         <div class="d-flex flex-column mb-5 additional-description">
           <p>نأمل تحويل المبلغ الـمستحق 5590 ريال الى الحساب البنكي لـ</p>
-          <p>شركة الدراجات النارية المعتمدة مصرف الانماء</p>
-          <p>SA395000000694525500587</p>
+          <p>شركة الدراجات النارية المعتمدة {{bank_name}}</p>
+          <p>{{bank_account_number}}</p>
         </div>
         <div class="mb-3">
           <div class="d-flex gap-3 align-items-center checkbox-input-container">
@@ -310,7 +295,56 @@
     </div>
     <script>
       let currentTab = 0;
+      let motorcyclePrice = 0;
+      let availableMotorcycles = 0;
       showTab(currentTab);
+      
+      document.addEventListener("DOMContentLoaded", function () {
+        const understandCheckbox = document.getElementById("price-agreement-checkbox");
+        const nextBtn = document.getElementById("nextBtn");
+    
+        understandCheckbox.addEventListener("change", function () {
+          nextBtn.disabled = !this.checked;
+        });
+    
+        // Initialize the next button state
+        nextBtn.disabled = !understandCheckbox.checked;
+      });
+    
+
+      async function fetchMotorcycleInfo() {
+        try {
+          let response = await fetch("{{base_url}}/users/fetch-motorcycle-info/");
+          if (!response.ok) {
+            throw new Error("Failed to fetch motorcycle info");
+          }
+          let data = await response.json();
+          motorcyclePrice = data.motorcycle_price;
+          availableMotorcycles = data.available_motorcycles;
+          console.log("Motorcycle info fetched:", data);
+        } catch (error) {
+          console.error("Error fetching motorcycle info:", error);
+        }
+      }
+
+      function updateTotalPriceAndValidate() {
+        let count = document.getElementById("motorcycle-count-input").value;
+        let errorElement = document.getElementById("motorcycle-count-input-error");
+        if (count && count > 0) {
+          if (count <= availableMotorcycles) {
+            let totalPrice = count * motorcyclePrice;
+            document.getElementById("total-price").textContent = `إجمالي السعر: ${totalPrice} ريال`;
+            localStorage.setItem("total-price", totalPrice);
+            errorElement.textContent = "";
+          } else {
+            errorElement.textContent = `العدد المطلوب (${count}) يتجاوز العدد المتاح (${availableMotorcycles}).`;
+            document.getElementById("total-price").textContent = "";
+          }
+        } else {
+          errorElement.textContent = "";
+          document.getElementById("total-price").textContent = "";
+        }
+      }
 
       function showTab(n) {
         let x = document.getElementsByClassName("step");
@@ -320,17 +354,22 @@
         document
           .querySelector(".progress-bar")
           .setAttribute("aria-valuenow", progress);
-        // if (n == 0) {
-        //   document.getElementById("prevBtn").style.display = "none";
-        // } else {
-        //   document.getElementById("prevBtn").style.display = "inline";
-        // }
         if (n == x.length - 1) {
           document.getElementById("nextBtn").innerHTML = "Submit";
         } else {
           document.getElementById("nextBtn").innerHTML =
-            'التالي<img src="./arrow-left.svg" />';
+            'التالي<img src="{% static "arrow-left.svg" %}" />';
         }
+        
+        // Update total price summary if this is the total price step
+        if (n === 5) { // Change this index to the correct step index for the total price step
+          const totalPrice = localStorage.getItem("total-price");
+          if (totalPrice) {
+            document.getElementsByClassName("total-price-summary")[0].textContent = `${totalPrice} ريال`;
+            document.getElementsByClassName("total-price-summary")[1].textContent = `${totalPrice} ريال`;
+          }
+        }
+        
       }
 
       async function nextPrev(n) {
@@ -374,6 +413,10 @@
               y[i].className += " invalid";
               document.getElementById("phone-input-error").textContent = "الرجاء إدخال رقم هاتف صحيح.";
               valid = false;
+            } else if (y[i].id === "name-input" && !validateFullname(y[i].value)) {
+              y[i].className += " invalid";
+              document.getElementById("name-input-error").textContent = "ادخل اسمك الثلاثي بشكل صحيح.";
+              valid = false;
             } else if (y[i].id === "identification-input" && y[i].value.length < 10) {
               y[i].className += " invalid";
               document.getElementById("identification-input-error").textContent = "رقم الهوية يجب أن يكون 10 أرقام على الأقل.";
@@ -382,10 +425,14 @@
               y[i].className += " invalid";
               document.getElementById("motorcycle-count-input-error").textContent = "الرجاء إدخال عدد صحيح أكبر من صفر.";
               valid = false;
+            } else if (y[i].id === "motorcycle-count-input" && y[i].value > availableMotorcycles) {
+              y[i].className += " invalid";
+              document.getElementById("motorcycle-count-input-error").textContent = `العدد المطلوب (${y[i].value}) يتجاوز العدد المتاح (${availableMotorcycles}).`;
+              valid = false;
             }
           }
         }
-
+        
         if (valid) {
           if (currentTab === 0) {
             localStorage.setItem(
@@ -423,18 +470,24 @@
       }
 
       function validatePhoneNumber(phone) {
-        const re = /^[0-9]{10}$/;
+        const re = /^((?:[+?0?0?966]+)(?:\s?\d{2})(?:\s?\d{7}))$/;
         return re.test(String(phone));
+      }
+
+      function validateFullname(name) {
+        const re = /^(?:(?:[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}\s){2}[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}|(?:[A-Za-z'-]{2,}\s){2}[A-Za-z'-]{2,})$/;
+        return re.test(String(name));
       }
 
       async function callAPIForStep(step) {
         let apiUrl;
         let data;
-
+        const nextBtn = document.getElementById("nextBtn")
         switch (step) {
           case 0:
             apiUrl = "{{base_url}}/users/register/";
             data = { email: localStorage.getItem("email") };
+            nextBtn.classList.add('disabled')
             console.log({data});
             break;
           case 1:
@@ -443,6 +496,7 @@
               code: document.getElementById("code-input").value,
               email: localStorage.getItem("email"),
             };
+            nextBtn.classList.add('disabled')
             break;
           case 9:
             apiUrl = "{{base_url}}/users/complete-registration/";
@@ -453,6 +507,7 @@
               id_number: localStorage.getItem("identification"),
               count: localStorage.getItem("motorcycle-count")
             };
+            nextBtn.classList.add('disabled')
             break;
         }
 
@@ -468,13 +523,16 @@
             let result = await response.json();
             if (!response.ok) {
               handleError(step, result.message);
+              nextBtn.classList.remove('disabled')
               return false;
             }
           } catch (error) {
             handleError(step, error.message);
+            nextBtn.classList.remove('disabled')
             return false;
           }
         }
+        nextBtn.classList.remove('disabled')
         return true;
       }
 
@@ -503,6 +561,9 @@
           .querySelector(".progress-bar")
           .setAttribute("aria-valuenow", 0);
       }
+
+      // Fetch the motorcycle price and available motorcycles when the page loads
+      fetchMotorcycleInfo();
     </script>
   </body>
 </html>

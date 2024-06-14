@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
 from pathlib import Path
-from . import dashboard
+from .dashboard import JAZZMIN_SETTINGS
 import dotenv
 
 dotenv.read_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
@@ -155,3 +155,6 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+
+
+JAZZMIN_SETTINGS = JAZZMIN_SETTINGS

@@ -5,8 +5,8 @@ from django.views import View
 from django.core.mail import send_mail
 import random
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from users.models import Client
+from django.views.decorators.csrf import csrf_exempt
+from users.models import Client, Motorcycle, Settings
 
 User = Client
 
@@ -21,6 +21,12 @@ class RegisterView(View):
     
     def get(self, request):
         context = {"base_url": self.get_base_url(request)}
+        settings = Settings.objects.all().first()
+        context.update({
+            "agreement_text": settings.agreement_text,
+            "bank_name": settings.bank_name,
+            "bank_account_number": settings.bank_account_number,
+        })
         return render(request, 'users/index.html', context)
 
     def post(self, request):
@@ -32,8 +38,10 @@ class RegisterView(View):
         user, created = User.objects.get_or_create(email=email, defaults={'verification_code': code})
         if not created:
             user.verification_code = code
-            user.steps = 'first'
-            user.save()
+        
+        user.steps = 'first'
+        user.save()            
+            
         send_mail('رمز التحقق الخاص بك', f'رمز التحقق الخاص بك هو :{code}', 'admin@taheed.com', [email])
         return JsonResponse({'message': 'Verification code sent'})
 
@@ -74,13 +82,27 @@ class CompleteRegistrationView(View):
         return JsonResponse({'message': 'Registration completed'})
 
 
-# views.py
-from django.shortcuts import render
+@method_decorator(csrf_exempt, name='dispatch')
+class MotorcycleInfoView(View):
+    def get(self, request):
+        motorcycle = Motorcycle.objects.all().first()
+        info = {
+            "motorcycle_price": motorcycle.motorcycle_price,
+            "available_motorcycles": motorcycle.available_motorcycles
+        }
+        return JsonResponse(info)
+    
+    
 
-def custom_admin_dashboard(request):
+@method_decorator(csrf_exempt, name='dispatch')
+class ClientDashbboardView(View):
+    @staticmethod
+    def get_base_url(request):
+        base_url = f"{request.scheme}://{request.get_host()}"
+        return base_url
+    
+    def get(self, request):
+        context = {"base_url": self.get_base_url(request)}
+        
+        return render(request, 'users/dashboard.html', context)
 
-    context = {
-        'active_users': 100,
-        'blocked_users': 200,
-    }
-    return render(request, 'admin/custom_dashboard.html', context)

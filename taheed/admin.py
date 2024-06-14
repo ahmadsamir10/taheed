@@ -1,22 +1,34 @@
 # admin.py
-from typing import Any
+from django.db.models import Q
 from django.contrib import admin
-from django.core.handlers.wsgi import WSGIRequest
 from django.template.response import TemplateResponse
-from django.urls import path
-from .views import custom_admin_dashboard
+from users.models import Motorcycle, Client, User, Settings
+from users.admin import UserAdmin, ClientAdmin, MotorcycleAdmin, SettingsAdmin
 
 class CustomAdminSite(admin.AdminSite):
     site_header = 'My Custom Admin'
     site_title = 'Admin Portal'
     index_title = 'Welcome to the Custom Admin Dashboard'
-
-    # def get_urls(self):
-    #     urls = super().get_urls()
-    #     custom_urls = [
-    #         path('', self.admin_view(custom_admin_dashboard))
-    #     ]
-    #     return custom_urls + urls
+    
+    def get_statistics(self):
+        statistics = {
+            "registered_clients_count": 0,
+            "clients_who_purchased_count": 0,
+            "all_motorcycles_count": 0,
+            "all_motorcyles_total_price": 0
+        }
+        try:
+            motorcycles_information = Motorcycle.objects.first()
+            registered_clients_count = Client.objects.filter(Q(steps="second") | Q(steps="completed")).count()
+            clients_who_purchased_count = Client.objects.filter(steps="completed").count()
+            statistics['registered_clients_count'] = registered_clients_count
+            statistics['clients_who_purchased_count'] = clients_who_purchased_count
+            all_motorcycles_count = motorcycles_information.available_motorcycles + motorcycles_information.soldout_motorcycles
+            statistics['all_motorcycles_count'] = motorcycles_information.available_motorcycles + motorcycles_information.soldout_motorcycles
+            statistics['all_motorcyles_total_price'] = motorcycles_information.motorcycle_price * all_motorcycles_count
+            return statistics
+        except:
+            return statistics
     
     
     def index(self, request, extra_context=None):
@@ -32,8 +44,8 @@ class CustomAdminSite(admin.AdminSite):
             "subtitle": None,
             "app_list": app_list,
             **(extra_context or {}),
+            **self.get_statistics()
         }
-        print("app_list >> ", app_list)
 
         request.current_app = self.name
 
@@ -41,4 +53,11 @@ class CustomAdminSite(admin.AdminSite):
             request, self.index_template or "admin/index.html", context
         )
 
-admin_site = CustomAdminSite(name='custom_admin')
+admin_site = CustomAdminSite(name='تعهيد')
+
+
+# Register models with the custom admin site
+admin_site.register(Motorcycle, MotorcycleAdmin)
+admin_site.register(User, UserAdmin)
+admin_site.register(Settings, SettingsAdmin)
+admin_site.register(Client, ClientAdmin)
