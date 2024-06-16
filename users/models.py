@@ -40,12 +40,13 @@ class Client(models.Model):
         verbose_name = "العميل"
         verbose_name_plural = "العملاء"
         
+        
 
 class Motorcycle(models.Model):
     motorcycle_price = models.FloatField(verbose_name="سعر الدراجة النارية")
     available_motorcycles = models.PositiveIntegerField(default=0, verbose_name="الدراجات المتاحة")
     soldout_motorcycles = models.PositiveIntegerField(default=0, verbose_name="الدراجات المباعة")
-    total_rental_amount = models.PositiveIntegerField(default=0, verbose_name="إجمالي مبلغ الإيجار")
+    total_rental_amount = models.FloatField(default=0, verbose_name="إجمالي مبلغ الإيجار")
     
     def save(self, *args, **kwargs) -> None:
         self.total_rental_amount = self.soldout_motorcycles * self.motorcycle_price

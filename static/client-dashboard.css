@@ -1,0 +1,100 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    direction: rtl;
+}
+
+.container {
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+}
+
+.welcome-message {
+    color: #3A3A3A;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.stat-box {
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: right;
+}
+
+.left-box {
+    background-color: #ffffff;
+    border: 1px solid #dcdcdc;
+}
+
+.right-box {
+    background: linear-gradient(135deg, #290F7B 0%, #534680 100%);
+    color: white;
+}
+
+.stat-row, .left-box p {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.stat-value {
+    font-weight: bold;
+}
+
+.progress-bar-container {
+    margin-top: 20px;
+    text-align: left;
+    color: white;
+    position: relative;
+}
+
+.progress-bar-container span {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.progress-bar {
+    background-color: rgba(255, 255, 255, 0.3);
+    height: 20px;
+    border-radius: 10px;
+    width: 100%;
+    position: relative;
+}
+
+.progress {
+    background-color: white;
+    height: 100%;
+    border-radius: 10px;
+    width: 75%; /* Adjust this width based on progress */
+    position: absolute;
+}
+
+.add-button {
+    background-color: #331A9C;
+    border: none;
+    color: white;
+    padding: 5px 30px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 18px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 60px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.add-button:hover {
+    background-color: #290f7b;
+}
+
+.plus-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}

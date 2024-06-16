@@ -1,102 +1,117 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width,
-								initial-scale=1.0"
-    />
-    <title>لوحة التحكم الخاصة بالعميل</title>
-    <!-- Bootstrap CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap"
-      rel="stylesheet"
-    />
-    <!-- Custom CSS -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     {% load static %}
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-  </head>
-
-  <body>
-    <nav class="navbar navbar-light">
-      <div
-        class="container-fluid d-flex justify-content-between align-items-center"
-      >
-        <span class="navbar-brand mb-0 h1">لوحة التحكم الخاصة بالعميل</span>
-        <span class="navbar-brand mb-0 h1">تعهيد</span>
-      </div>
-    </nav>
-    <div class="container-dashboard mt-5">
-        <header class="text-center mb-4">
-            <h1 class="border-bottom pb-2">لوحة التحكم الخاصة بالعميل</h1>
-        </header>
-        <main>
-            <section class="dashboard p-4 bg-white rounded shadow">
-                <div class="welcome mb-4">
-                    <h2 class="text-end text-primary">مرحبا عبدالله</h2>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <div class="contract-info p-3 bg-light rounded border">
-                            <p><span class="fw-bold text-primary">رقم العقد:</span> 251223006</p>
-                            <p><span class="fw-bold text-primary">عدد الدراجات النارية:</span> 15</p>
-                            <p><span class="fw-bold text-primary">عدد دفعات الإيجار المتبقية:</span> 16</p>
-                        </div>
+    <link rel="stylesheet" href="{% static 'client-dashboard.css' %}">
+</head>
+<body>
+    <div class="container text-center mt-5">
+        <h1 class="welcome-message">مرحبا {{full_name}}</h1>
+        <div class="row">
+            <div class="col-8">
+                <div class="stat-box right-box">
+                    <div class="stat-row">
+                        <p>عدد الدراجات النارية</p>
+                        <p class="stat-value bike-count">{{bike_count}}</p>
                     </div>
-                    <div class="col-md-6">
-                        <div class="stats p-3 bg-primary text-white rounded">
-                            <p><span class="fw-bold">عدد الدراجات النارية:</span> 30</p>
-                            <p><span class="fw-bold">عدد العقود:</span> 02</p>
-                            <p><span class="fw-bold">الإيجارات المدفوعة:</span> 75.240</p>
-                            <div class="progress my-3">
-                                <div class="progress-bar bg-dark" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">18/16</div>
-                            </div>
+                    <div class="stat-row">
+                        <p>عدد العقود</p>
+                        <p class="stat-value">02</p>
+                    </div>
+                    <div class="stat-row">
+                        <p>الايجارات المدفوعة</p>
+                        <p class="stat-value total" id="total-reservation">{{total_reservation}}</p>
+                    </div>
+                    <div class="progress-bar-container">
+                        <span>18/16</span>
+                        <div class="progress-bar">
+                            <div class="progress"></div>
                         </div>
                     </div>
                 </div>
-                <div class="text-center">
-                    <button id="add-bike" class="btn btn-primary mt-3">تأجير دراجات إضافية من هنا</button>
+            </div>
+            <div class="col-4">
+                <div class="stat-box left-box">
+                    <p>رقم العقد</p>
+                    <p class="stat-value">251223006</p>
+                    <p>عدد الدراجات النارية</p>
+                    <p class="stat-value bike-count">{{bike_count}}</p>
+                    <p>عدد دفعات الإيجار المتبقية</p>
+                    <p class="stat-value">16</p>
                 </div>
-            </section>
-        </main>
+            </div>
+        </div>
+        <button class="add-button" data-toggle="modal" data-target="#reserveModal">
+            تقدر تاجر دراجات اضافية من هنا <img src="{% static 'plus.png' %}" alt="plus icon" class="plus-icon">
+        </button>
     </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="reserveModal" tabindex="-1" aria-labelledby="reserveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reserveModalLabel">حجز المزيد من الدراجات</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="reserveForm">
+                        <div class="form-group">
+                            <label for="motorcyclesNumber">عدد الدراجات</label>
+                            <input type="number" class="form-control" id="motorcyclesNumber" name="motorcyclesNumber" min="1" required>
+                        </div>
+                        <button type="submit" class="add-button">حجز</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        document.getElementById('add-bike').addEventListener('click', function() {
-            addMoreBikes();
-        });
-        
-        function addMoreBikes() {
-            // Placeholder for the actual API call
-            fetch('https://api.example.com/add-bike', {
+        document.getElementById('reserveForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const motorcyclesNumber = document.getElementById('motorcyclesNumber').value;
+            let availableMotorcycles = parseInt("{{available_motorcycles_count}}");
+            const email = "{{email}}";
+
+            if (parseInt(motorcyclesNumber) > parseInt(availableMotorcycles)) {
+                document.getElementById('motorcyclesNumber').classList.add('is-invalid');
+                return;
+            } else {
+                document.getElementById('motorcyclesNumber').classList.remove('is-invalid');
+            }
+
+            fetch('{{base_url}}/users/add-motorcyles/', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    userId: 'abdullah', // Example user ID
-                    contractId: '251223006' // Example contract ID
-                })
+                body: JSON.stringify({ motorcycles_count: motorcyclesNumber, email: email}),
             })
             .then(response => response.json())
             .then(data => {
-                // Handle the response data here
-                alert('تم إضافة دراجة نارية بنجاح');
-                console.log(data);
+                console.log('Success:', data);
+                document.getElementsByClassName('bike-count')[0].textContent = data.count;
+                document.getElementsByClassName('bike-count')[1].textContent = data.count;
+                document.getElementById('total-reservation').textContent = data.total;
+                availableMotorcycles -= parseInt(motorcyclesNumber);
+                alert('تم الحجز بنجاح!');
+                $('#reserveModal').modal('hide');
             })
-            .catch(error => {
-                // Handle errors here
-                alert('حدث خطأ أثناء إضافة الدراجة النارية');
+            .catch((error) => {
                 console.error('Error:', error);
+                alert('فشل الحجز برجاء المحاولة لاحقا.');
             });
-        }        
+        });
     </script>
-  </body>
+</body>
 </html>

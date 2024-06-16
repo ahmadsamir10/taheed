@@ -253,14 +253,14 @@
       <div class="step">
         <h6>سعيديـن بثقتــك</h6>
         <div class="d-flex flex-column mb-5 additional-description">
-          <p>نأمل تحويل المبلغ الـمستحق 5590 ريال الى الحساب البنكي لـ</p>
+          <p>نأمل تحويل المبلغ الـمستحق <span class="total-price-summary"></span> الى الحساب البنكي لـ</p>
           <p>شركة الدراجات النارية المعتمدة {{bank_name}}</p>
           <p>{{bank_account_number}}</p>
         </div>
         <div class="mb-3">
           <div class="d-flex gap-3 align-items-center checkbox-input-container">
-            <label class="checkbox-container">
-              <input type="checkbox" checked="checked" id="file-input" />
+            <label class="">
+              <input type="file" id="file-input" />
               <span class="checkmark"></span>
             </label>
             <span>ارفق ايصال التحويل هنا</span>
@@ -294,23 +294,57 @@
       </div>
     </div>
     <script>
-      let currentTab = 0;
+      let currentTab = 8;
       let motorcyclePrice = 0;
       let availableMotorcycles = 0;
       showTab(currentTab);
-      
+
       document.addEventListener("DOMContentLoaded", function () {
-        const understandCheckbox = document.getElementById("price-agreement-checkbox");
         const nextBtn = document.getElementById("nextBtn");
-    
-        understandCheckbox.addEventListener("change", function () {
-          nextBtn.disabled = !this.checked;
-        });
-    
+        const understandCheckbox = document.getElementById("price-agreement-checkbox");
+
         // Initialize the next button state
         nextBtn.disabled = !understandCheckbox.checked;
+
+        understandCheckbox.addEventListener("change", function () {
+          if (this.checked) {
+            nextBtn.classList.remove('disabled');
+            nextBtn.disabled = false;
+          } else {
+            nextBtn.classList.add('disabled');
+            nextBtn.disabled = true;
+          }
+        });
+
+        // Add event listeners for steps 7 and 8 checkboxes
+        const policyAgreementCheckbox = document.getElementById("policy-agreement-checkbox");
+
+
+        policyAgreementCheckbox.addEventListener("change", function () {
+          if (this.checked) {
+            nextBtn.classList.remove('disabled');
+            nextBtn.disabled = false;
+          } else {
+            nextBtn.classList.add('disabled');
+            nextBtn.disabled = true;
+          }
+        });
+        
+
+        const fileInput = document.getElementById("file-input");
+        // Add event listener for the file input
+        fileInput.addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              localStorage.setItem("transfer-receipt", e.target.result);
+            };
+            reader.readAsDataURL(file);
+          }
+  });
+
       });
-    
 
       async function fetchMotorcycleInfo() {
         try {
@@ -351,25 +385,23 @@
         x[n].style.display = "block";
         let progress = (n / (x.length - 1)) * 100;
         document.querySelector(".progress-bar").style.width = progress + "%";
-        document
-          .querySelector(".progress-bar")
-          .setAttribute("aria-valuenow", progress);
+        document.querySelector(".progress-bar").setAttribute("aria-valuenow", progress);
         if (n == x.length - 1) {
           document.getElementById("nextBtn").innerHTML = "Submit";
         } else {
           document.getElementById("nextBtn").innerHTML =
             'التالي<img src="{% static "arrow-left.svg" %}" />';
         }
-        
+
         // Update total price summary if this is the total price step
         if (n === 5) { // Change this index to the correct step index for the total price step
           const totalPrice = localStorage.getItem("total-price");
           if (totalPrice) {
             document.getElementsByClassName("total-price-summary")[0].textContent = `${totalPrice} ريال`;
             document.getElementsByClassName("total-price-summary")[1].textContent = `${totalPrice} ريال`;
+            document.getElementsByClassName("total-price-summary")[3].textContent = `${totalPrice} ريال`;
           }
         }
-        
       }
 
       async function nextPrev(n) {
@@ -379,10 +411,8 @@
         currentTab += n;
         if (currentTab >= x.length) {
           document.querySelector(".progress-bar").style.width = "100%";
-          document
-            .querySelector(".progress-bar")
-            .setAttribute("aria-valuenow", 100);
-          resetForm();
+          document.querySelector(".progress-bar").setAttribute("aria-valuenow", 100);
+          // No need to reset the form now as we will redirect the user
           return false;
         }
         showTab(currentTab);
@@ -432,32 +462,17 @@
             }
           }
         }
-        
+
         if (valid) {
           if (currentTab === 0) {
-            localStorage.setItem(
-              "email",
-              document.getElementById("email-input").value
-            );
+            localStorage.setItem("email", document.getElementById("email-input").value);
           } else if (currentTab === 2) {
-            localStorage.setItem(
-              "phone",
-              document.getElementById("phone-input").value
-            );
+            localStorage.setItem("phone", document.getElementById("phone-input").value);
           } else if (currentTab === 3) {
-            localStorage.setItem(
-              "name",
-              document.getElementById("name-input").value
-            );
-            localStorage.setItem(
-              "identification",
-              document.getElementById("identification-input").value
-            );
+            localStorage.setItem("name", document.getElementById("name-input").value);
+            localStorage.setItem("identification", document.getElementById("identification-input").value);
           } else if (currentTab === 4) {
-            localStorage.setItem(
-              "motorcycle-count",
-              document.getElementById("motorcycle-count-input").value
-            );
+            localStorage.setItem("motorcycle-count", document.getElementById("motorcycle-count-input").value);
           }
           return await callAPIForStep(currentTab);
         }
@@ -482,13 +497,13 @@
       async function callAPIForStep(step) {
         let apiUrl;
         let data;
-        const nextBtn = document.getElementById("nextBtn")
+        const nextBtn = document.getElementById("nextBtn");
         switch (step) {
           case 0:
             apiUrl = "{{base_url}}/users/register/";
             data = { email: localStorage.getItem("email") };
-            nextBtn.classList.add('disabled')
-            console.log({data});
+            nextBtn.classList.add('disabled');
+            nextBtn.disabled = true;
             break;
           case 1:
             apiUrl = "{{base_url}}/users/verify/";
@@ -496,18 +511,20 @@
               code: document.getElementById("code-input").value,
               email: localStorage.getItem("email"),
             };
-            nextBtn.classList.add('disabled')
+            nextBtn.classList.add('disabled');
+            nextBtn.disabled = true;
             break;
-          case 9:
+          case 9: // Update this to the correct step index
             apiUrl = "{{base_url}}/users/complete-registration/";
-            data = { 
+            data = {
               phone: document.getElementById("phone-input").value,
               email: localStorage.getItem("email"),
               full_name: localStorage.getItem("name"),
               id_number: localStorage.getItem("identification"),
-              count: localStorage.getItem("motorcycle-count")
+              count: localStorage.getItem("motorcycle-count"),
+              receipt: localStorage.getItem("transfer-receipt")
             };
-            nextBtn.classList.add('disabled')
+            nextBtn.classList.add('disabled');
             break;
         }
 
@@ -523,16 +540,25 @@
             let result = await response.json();
             if (!response.ok) {
               handleError(step, result.message);
-              nextBtn.classList.remove('disabled')
+              nextBtn.classList.remove('disabled');
+              nextBtn.disabled = false;
               return false;
+            } else {
+              // Handle redirection if URL is returned in the response
+              if (step === 9 && result.url) { // Change step index to match the last step
+                window.location.href = result.url;
+                return false; // Stop further processing as we are redirecting
+              }
             }
           } catch (error) {
             handleError(step, error.message);
-            nextBtn.classList.remove('disabled')
+            nextBtn.classList.remove('disabled');
+            nextBtn.disabled = false;
             return false;
           }
         }
-        nextBtn.classList.remove('disabled')
+        nextBtn.classList.remove('disabled');
+        nextBtn.disabled = false;
         return true;
       }
 
@@ -557,13 +583,12 @@
         currentTab = 0;
         showTab(currentTab);
         document.querySelector(".progress-bar").style.width = "0%";
-        document
-          .querySelector(".progress-bar")
-          .setAttribute("aria-valuenow", 0);
+        document.querySelector(".progress-bar").setAttribute("aria-valuenow", 0);
       }
 
       // Fetch the motorcycle price and available motorcycles when the page loads
       fetchMotorcycleInfo();
+
     </script>
   </body>
 </html>
