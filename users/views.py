@@ -14,14 +14,15 @@ from django.core.files.base import ContentFile
 
 User = Client
 
-
-@method_decorator(csrf_exempt, name='dispatch')
-class RegisterView(View):
-    
+class BaseUrlMixin:
     @staticmethod
     def get_base_url(request):
-        base_url = f"{request.scheme}://{request.get_host()}"
+        base_url = f"https://{request.get_host()}"
         return base_url
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RegisterView(View, BaseUrlMixin):
     
     def get(self, request):
         context = {"base_url": self.get_base_url(request)}
@@ -76,12 +77,8 @@ class VerifyView(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class CompleteRegistrationView(View):
+class CompleteRegistrationView(View, BaseUrlMixin):
     
-    @staticmethod 
-    def get_base_url(request):
-        base_url = f"{request.scheme}://{request.get_host()}"
-        return base_url
     
     @staticmethod
     def readjust_motorcylce_info(bike_count):
@@ -130,11 +127,8 @@ class MotorcycleInfoView(View):
     
 
 @method_decorator(csrf_exempt, name='dispatch')
-class ClientDashbboardView(View):
-    @staticmethod
-    def get_base_url(request):
-        base_url = f"{request.scheme}://{request.get_host()}"
-        return base_url
+class ClientDashbboardView(View, BaseUrlMixin):
+
     
     def get(self, request):
         context = {"base_url": self.get_base_url(request)}
@@ -205,12 +199,8 @@ class RequestToLoginView(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class LoginToDashboardView(View):
+class LoginToDashboardView(View, BaseUrlMixin):
     
-    @staticmethod
-    def get_base_url(request):
-        base_url = f"{request.scheme}://{request.get_host()}"
-        return base_url
     
     def get(self, request):
         context = {"base_url": self.get_base_url(request)}
