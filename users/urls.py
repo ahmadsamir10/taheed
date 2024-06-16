@@ -4,15 +4,15 @@ from .views import RegisterView, VerifyView, CompleteRegistrationView, Motorcycl
 namespace = "users"
 
 urlpatterns = [
-    path('register/', RegisterView.as_view(), name='register'),
-    path('verify/', VerifyView.as_view(), name='verify'),
-    path('complete-registration/', CompleteRegistrationView.as_view(), name='complete_registration'),
-    path('fetch-motorcycle-info/', MotorcycleInfoView.as_view(), name='fetch-motorcycle-info'),
+    path('', RegisterView.as_view(), name='register'),
+    path('/users/verify/', VerifyView.as_view(), name='verify'),
+    path('/users/complete-registration/', CompleteRegistrationView.as_view(), name='complete_registration'),
+    path('/users/fetch-motorcycle-info/', MotorcycleInfoView.as_view(), name='fetch-motorcycle-info'),
     
     # dahsboard
-    path('dahsboard/login/', LoginToDashboardView.as_view(), name='login-to-dashboard'),
-    path('dahsboard/login/request/', RequestToLoginView.as_view(), name='request-to-login'),
-    path('dahsboard/', ClientDashbboardView.as_view(), name='dahsboard'),
-    path('add-motorcyles/', AddMotorcyclesView.as_view(), name='add-motorcyles')
+    path('/users/dahsboard/login/', LoginToDashboardView.as_view(), name='login-to-dashboard'),
+    path('/users/dahsboard/login/request/', RequestToLoginView.as_view(), name='request-to-login'),
+    path('/users/dahsboard/', ClientDashbboardView.as_view(), name='dahsboard'),
+    path('/users/add-motorcyles/', AddMotorcyclesView.as_view(), name='add-motorcyles')
     
 ]
