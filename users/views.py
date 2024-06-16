@@ -1,5 +1,8 @@
+import base64
 import json
-from django.shortcuts import render
+from uuid import uuid4
+from django.urls import reverse
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views import View
 from django.core.mail import send_mail
@@ -7,6 +10,7 @@ import random
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from users.models import Client, Motorcycle, Settings
+from django.core.files.base import ContentFile
 
 User = Client
 
@@ -32,8 +36,13 @@ class RegisterView(View):
     def post(self, request):
         body_unicode = request.body.decode('utf-8')
         body_data = json.loads(body_unicode)
-
         email = body_data.get("email")
+        
+        user_exists_and_completed = User.objects.filter(email=email, steps="completed")
+        print("user_exists_and_completed >> ", user_exists_and_completed)
+        if user_exists_and_completed:
+            return JsonResponse({'message': 'هذا المستخدم مسجل من قبل لدينا'}, status=400)
+        
         code = str(random.randint(100000, 999999))
         user, created = User.objects.get_or_create(email=email, defaults={'verification_code': code})
         if not created:
@@ -58,6 +67,7 @@ class VerifyView(View):
             user = User.objects.get(email=email, verification_code=code)
             user.is_verified = True
             user.steps = 'second'
+            print("verify view >> ", user.bike_count)
             user.save()
             return JsonResponse({'message': 'Email verified'})
         except User.DoesNotExist:
@@ -67,6 +77,26 @@ class VerifyView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CompleteRegistrationView(View):
+    
+    @staticmethod 
+    def get_base_url(request):
+        base_url = f"{request.scheme}://{request.get_host()}"
+        return base_url
+    
+    @staticmethod
+    def readjust_motorcylce_info(bike_count):
+        motorcycle_info = Motorcycle.objects.first()
+        motorcycle_info.available_motorcycles -= int(bike_count)
+        motorcycle_info.soldout_motorcycles += int(bike_count)
+        motorcycle_info.total_rental_amount += int(bike_count) * motorcycle_info.motorcycle_price
+        motorcycle_info.save()
+    
+    @staticmethod
+    def base64_to_file(base64_string):
+        format, imgstr = base64_string.split(';base64,')
+        ext = format.split('/')[-1]
+        return ContentFile(base64.b64decode(imgstr), name=uuid4().hex + "." + ext)
+
     def post(self, request):
         body_unicode = request.body.decode('utf-8')
         body_data = json.loads(body_unicode)
@@ -76,10 +106,15 @@ class CompleteRegistrationView(View):
         user.phone = body_data.get('phone')
         user.id_number = body_data.get('id_number')
         user.bike_count = body_data.get('count')
+        user.receipt = self.base64_to_file(body_data.get('receipt'))
         user.steps = "completed"
-
         user.save()
-        return JsonResponse({'message': 'Registration completed'})
+        self.readjust_motorcylce_info(user.bike_count)
+        response = {
+            "url": f"{self.get_base_url(request)}{reverse('dahsboard')}?email={email}&code={user.verification_code}"
+            }
+        
+        return JsonResponse(response)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -103,6 +138,95 @@ class ClientDashbboardView(View):
     
     def get(self, request):
         context = {"base_url": self.get_base_url(request)}
-        
-        return render(request, 'users/dashboard.html', context)
+        email = request.GET.get('email')
+        code = request.GET.get('code')
+        user_exists = User.objects.filter(email=email, verification_code=code).first()
+        if user_exists:
+            user_exists.verification_code = str(random.randint(100000, 999999))
+            user_exists.save()
+            motorcycle_info = Motorcycle.objects.first()
+            context.update({
+                "email": email,
+                "full_name": user_exists.full_name,
+                "bike_count": user_exists.bike_count,
+                "total_reservation": user_exists.bike_count * motorcycle_info.motorcycle_price,
+                "available_motorcycles_count": motorcycle_info.available_motorcycles
+                })
+            return render(request, 'users/dashboard.html', context)
+        return redirect('login-to-dashboard')
 
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AddMotorcyclesView(View):
+    
+    @staticmethod
+    def readjust_motorcylce_info(bike_count):
+        motorcycle_info = Motorcycle.objects.first()
+        motorcycle_info.available_motorcycles -= int(bike_count)
+        motorcycle_info.soldout_motorcycles += int(bike_count)
+        motorcycle_info.total_rental_amount += int(bike_count) * motorcycle_info.motorcycle_price
+        motorcycle_info.save()
+        return motorcycle_info
+    
+    def post(self, request):
+        body_unicode = request.body.decode('utf-8')
+        body_data = json.loads(body_unicode)
+        email = body_data.get("email")
+        motorcycles_count = body_data.get("motorcycles_count")        
+        user = User.objects.filter(email=email, steps="completed")
+        if user.exists():
+            user = user.first()
+            user.bike_count += int(motorcycles_count)
+            user.save()
+            motorcycle_info = self.readjust_motorcylce_info(motorcycles_count)
+            response = {
+                'message': 'Motorcycles added',
+                'count': user.bike_count,
+                'total': user.bike_count * motorcycle_info.motorcycle_price
+            }
+            return JsonResponse(response)
+        return JsonResponse({'message': 'something went wrong!'}, status=400)
+    
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RequestToLoginView(View):
+    def post(self, request):
+        body_unicode = request.body.decode('utf-8')
+        body_data = json.loads(body_unicode)
+        email = body_data.get("email")
+        user = User.objects.filter(email=email).first()
+        if user:
+            send_mail('رمز التحقق الخاص بك', f'رمز التحقق الخاص بك هو :{user.verification_code}', 'admin@taheed.com', [email])
+            return JsonResponse({'message': 'تم ارسال رمز التحقق الي البريد الالكتروني', 'success': True})
+        
+        return JsonResponse({'message': 'لا يوجد عميل بهذا البريد الالكتروني'}, status=400) 
+
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class LoginToDashboardView(View):
+    
+    @staticmethod
+    def get_base_url(request):
+        base_url = f"{request.scheme}://{request.get_host()}"
+        return base_url
+    
+    def get(self, request):
+        context = {"base_url": self.get_base_url(request)}
+        return render(request, 'users/login-to-dashboard.html', context)
+    
+    def post(self, request):
+        body_unicode = request.body.decode('utf-8')
+        body_data = json.loads(body_unicode)
+        email = body_data.get("email")
+        code = body_data.get("otp")
+        user_exists = User.objects.filter(email=email, verification_code=code).first()
+        if user_exists:
+            response = {
+            "url": f"{self.get_base_url(request)}{reverse('dahsboard')}?email={email}&code={code}",
+            "success": True
+            }
+            return JsonResponse(response)
+        
+        return JsonResponse({'message': 'كلمة المرور لمرة واحدة غير صحيحة'})

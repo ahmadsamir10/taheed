@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول للوحة التحكم</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .login-form {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .login-form h2 {
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #331A9C;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-form">
+        <h2 class="text-center">تسجل الدخول</h2>
+        <form id="requestOtpForm">
+            <div class="form-group">
+                <label for="email">البريد الالكتروني</label>
+                <input type="email" class="form-control" id="email" placeholder="ادخل البريد الالكتروني" required>
+            </div>
+            <button type="submit" class="btn btn-block">طلب رمز التوثيق</button>
+        </form>
+        <div id="error-message" class="text-danger mt-3"></div>
+    </div>
+
+    <!-- OTP Modal -->
+    <div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="otpModalLabel">ادخل رمز التوثيق</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="otpForm">
+                        <div class="form-group">
+                            <label for="otp">OTP</label>
+                            <input type="text" class="form-control" id="otp" placeholder="ادخل رمز التوثيق" required>
+                        </div>
+                        <button type="submit" class="btn btn-block">تسجيل الدخول</button>
+                    </form>
+                    <div id="otp-error-message" class="text-danger mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.getElementById('requestOtpForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const errorMessage = document.getElementById('error-message');
+
+            // Clear previous error messages
+            errorMessage.textContent = '';
+
+            // Send the request to get an OTP
+            fetch('{{base_url}}/users/dahsboard/login/request/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show the OTP modal
+                    $('#otpModal').modal('show');
+                } else {
+                    // Display error message
+                    errorMessage.textContent = data.message || 'Error requesting OTP. Please try again.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.textContent = 'An error occurred. Please try again later.';
+            });
+        });
+
+        document.getElementById('otpForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const otp = document.getElementById('otp').value;
+            const otpErrorMessage = document.getElementById('otp-error-message');
+
+            // Clear previous error messages
+            otpErrorMessage.textContent = '';
+
+            // Send the OTP and email to the server to log in
+            fetch('{{base_url}}/users/dahsboard/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email, otp: otp }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to the provided URL
+                    window.location.href = data.url;
+                } else {
+                    // Display error message
+                    otpErrorMessage.textContent = data.message || 'Invalid OTP. Please try again.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                otpErrorMessage.textContent = 'An error occurred. Please try again later.';
+            });
+        });
+    </script>
+</body>
+</html>
