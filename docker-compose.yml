@@ -10,8 +10,8 @@ services:
 
   web:
     build: .
-    volumes:
-      - .:/app
+    # volumes:
+    #   - .:/app
     depends_on:
       - db
     env_file:
