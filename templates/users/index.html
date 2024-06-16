@@ -499,7 +499,7 @@
         const nextBtn = document.getElementById("nextBtn");
         switch (step) {
           case 0:
-            apiUrl = "{{base_url}}/users/register/";
+            apiUrl = "{{base_url}}/";
             data = { email: localStorage.getItem("email") };
             nextBtn.classList.add('disabled');
             nextBtn.disabled = true;
